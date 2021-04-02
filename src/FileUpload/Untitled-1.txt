@@ -1,0 +1,208 @@
+import React, { Component } from "react";
+import fileUpload from "core/directives/fileUpload";
+import FileList from "./FileList";
+
+import "./FileUpload.less";
+
+class FileUpload extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedFiles: this.props.uploadedFiles,
+      loading: false,
+      error: [],
+      invalidFiles: []
+    };
+    this.fileArray = [];
+    this.fileUpload = null;
+  }
+
+  componentDidMount() {
+    this.initializeUploadComponent();
+  }
+
+  initializeUploadComponent() {
+    let self = this;
+
+    // On file browse complete call back
+    let onBrowseComplete = () => {
+      self.fileArray = [];
+      let files = self.fileUpload.files;
+      for (let i = 0; i < files.length; i++) {
+        let fileName = files[i].name;
+        let fileSize = self.formatBytes(files[i].size);
+        if (self.checkFileNameAlreadyAvailable(fileName)) {
+          console.log(`${fileName} file already available`);
+          self.setState({ error: `${fileName} file already available` });
+        } else {
+          let filesObj = { fileName, fileSize };
+          self.fileArray.push(files[i]);
+          let newFilesList = [...self.state.selectedFiles, filesObj];
+          self.setState({ selectedFiles: newFilesList });
+        }
+      }
+      self.setState({ loading: true });
+      self.fileUpload.files = this.fileArray;
+      self.fileUpload.onFileUpload();
+    };
+
+    //On file upload complete callback
+    let onFileUploadComplete = function(
+      result,
+      status,
+      uploadedPercentage,
+      file
+    ) {
+      if (self.props.uploadCallBack) {
+        self.props.uploadCallBack({ result, status, uploadedPercentage, file });
+      }
+      self.setState({ loading: false });
+    };
+
+    // fileUpload component config
+    let config = {
+      ...this.props.config,
+      onBrowseComplete: onBrowseComplete,
+      onFileUploadComplete: onFileUploadComplete
+    };
+
+    // Creating fileUpload component
+    let FileUploadComp = function(fileConfig) {
+      this.config = fileConfig;
+      this.applyStyles();
+      this.createMarkUp();
+    };
+
+    FileUploadComp.inheritsFrom(fileUpload);
+
+    FileUploadComp.prototype.validateFiletype = function() {
+      self.fileArray = [];
+      let files = this.files || [];
+      let invalidFilesList = [];
+      var patt = new RegExp(/<(\"[^\"]*\"|'[^']*'|[^'\">])*>/);
+      var doubleDotExtension = new RegExp(/^([^.]+)\.([^.]+)$/);
+
+      if (files.length === 0) {
+        console.log("Empty file");
+        self.setState({ error: "Empty file" });
+      }
+
+      for (let i = 0; i < files.length; i++) {
+        let fileName = files[i].name;
+        let fileSize = self.formatBytes(files[i].size);
+        if (files[i].name.match(new RegExp(this.config.fileType)) === null) {
+          const err1 = `${fileName} is not a supported file type.`;
+          console.log(err1);
+          invalidFilesList.push({ fileName, fileSize, err: err1 });
+          self.setState({ error: err1 });
+        } else if (patt.test(fileName) && doubleDotExtension.test(fileName)) {
+          const err2 = `${fileName} is invalid file`;
+          console.log(err2);
+          self.setState({ error: err2 });
+          invalidFilesList.push({ fileName, fileSize, err: err1 });
+        } else if (
+          this.config.fileSize &&
+          this.config.fileSize > files[i].size
+        ) {
+          const err3 = `${fileName} file exceeds the file size`;
+          console.log(err3);
+          self.setState({ error: err3 });
+          invalidFilesList.push({ fileName, fileSize, err: err1 });
+        }
+      }
+      let newInvalidFilesList = [
+        ...self.state.invalidFiles,
+        ...invalidFilesList
+      ];
+      self.setState({ invalidFiles: newInvalidFilesList });
+      fileUpload.prototype.validateFiletype.call(this);
+      return true;
+    };
+
+    this.fileUpload = new FileUploadComp(config);
+  }
+
+  // Format file size
+  formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return "0 Bytes";
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+  }
+
+  // check for same file name already exists
+  checkFileNameAlreadyAvailable(fileName) {
+    const { selectedFiles } = this.state;
+    const isAvailable =
+      selectedFiles.filter(file => file.fileName === fileName).length > 0;
+    return isAvailable;
+  }
+
+  // remove selected files
+  handleRemove = (fileName, err) => {
+    if (err) {
+      let invalidFiles = [...this.state.invalidFiles];
+      let filteredInvalidFiles = invalidFiles.filter(
+        file => file.fileName !== fileName
+      );
+      this.setState({ invalidFiles: filteredInvalidFiles });
+    } else {
+      let files = [...this.state.selectedFiles];
+      let newFileArray = [...this.fileArray];
+      let filteredFiles = files.filter(file => file.fileName !== fileName);
+      this.setState({ selectedFiles: filteredFiles });
+      this.fileArray = newFileArray.filter(file => file.name !== fileName);
+      this.getFiles();
+    }
+  };
+
+  // upload callBack
+  uploadCallBack(files) {
+    if (this.props.uploadFiles) {
+      this.props.uploadFiles(files);
+    }
+    this.getFiles();
+  }
+
+  getFiles() {
+    if (this.props.getFiles) {
+      this.props.getFiles(this.fileArray);
+    }
+  }
+
+  render() {
+    const { selectedFiles } = this.state;
+    return (
+      <div className="pb-file-upload-wrapper">
+        <div className="pb-file-upload-container">
+          <div className="browse-file">
+            <div className="browse-file-inner">
+              <span className="text">
+                Click here to <span className="highlight">Browse</span>
+              </span>
+            </div>
+          </div>
+          <div
+            id={this.props.config.containerId}
+            className="file-upload-comp-container"
+          ></div>
+        </div>
+        {selectedFiles && selectedFiles.length > 0 && (
+          <div className="file-details">
+            <FileList
+              selectedFiles={selectedFiles}
+              handleRemove={this.handleRemove}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+}
+
+export default FileUpload;

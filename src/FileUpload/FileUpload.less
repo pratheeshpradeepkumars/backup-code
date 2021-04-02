@@ -1,0 +1,186 @@
+.pb-file-upload-wrapper {
+  .pb-file-upload-container {
+    margin-bottom: 10px;
+
+    .browse-file {
+      position: absolute;
+      width: 100%;
+      height: 30px;
+      padding: 0px 6px;
+
+      .browse-file-inner {
+        border: 1px dashed #DEDEDE;
+        height: 100%;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .text {
+          font-size: 14px;
+          color: #ABAFB3
+        }
+
+        .highlight {
+          color: #04ACEC;
+        }
+      }
+    }
+
+    .file-upload-comp-container {
+      cursor: pointer;
+      opacity: 0;
+
+      .file-upload {
+        display: none;
+      }
+
+      .err-msg {
+        display: none;
+      }
+    }
+
+  }
+
+  .file-details {
+  
+    .file-list-container {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0;
+
+      .file-list {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ccc;
+        margin: 4px 6px;
+        padding: 5px 10px;
+        border-radius: 4px;
+
+        .file-icon {
+          i {
+            color: #04ACEC;
+            position: relative;
+            top: 2px;
+          }
+        }
+
+        .error-icon {
+          i {
+            color: #EC3751;
+            position: relative;
+            top: 2px;
+          }
+        }
+
+        .file-name {
+          flex: 1;
+          text-align: left;
+          font-size: 14px;
+
+          &.active-download {
+            color: #04ACEC;
+          }
+        }
+
+        .file-invalid {
+          color: #EC3751;
+        }
+
+        .file-remove {
+          margin: 0 auto;
+
+          i {
+            cursor: pointer;
+          }
+        }
+
+        &.error-list {
+
+          .file-name,
+          .file-size {
+            color: #EC3751;
+          }
+
+        }
+
+        .confirm-remove {
+          .pri {
+            background: #EC3751;
+            color: #fff;
+            padding: 0px 5px;
+          }
+
+          .pri,
+          .sec {
+            padding: 0px 5px;
+            opacity: .9;
+            transition: .5s ease;
+
+            &:focus {
+              outline: none;
+            }
+
+            &:hover {
+              opacity: 1;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .custom-err {
+    display: flex;
+    margin: 4px 8px;
+    color: #EC3751;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pb-file-upload-lds-ring {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 5px;
+  }
+
+  .pb-file-upload-lds-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    margin: 0px;
+    border: 2px solid #03a9f4;
+    border-radius: 50%;
+    animation: pb-file-upload-lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #00bcd4 transparent transparent transparent;
+  }
+
+  .pb-file-upload-lds-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+  }
+
+  .pb-file-upload-lds-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+
+  .pb-file-upload-lds-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+  }
+
+  @keyframes pb-file-upload-lds-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
